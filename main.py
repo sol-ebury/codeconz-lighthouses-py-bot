@@ -70,8 +70,8 @@ class BotGame:
                     return action
 
             # 60% de posibilidades de atacar el faro
-            if turn.Energy > lighthouses[(cx, cy)].Energy and (cx, cy) and self.last_action != game_pb2.ATTACK:
-                energy = lighthouses[(cx, cy)].Energy  * 0.8
+            if turn.Energy > lighthouses[(cx, cy)].Energy and self.last_action != game_pb2.ATTACK:
+                energy = turn.Energy
                 action = game_pb2.NewAction(
                     Action=game_pb2.ATTACK,
                     Energy=energy,
