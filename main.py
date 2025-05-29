@@ -28,6 +28,19 @@ class BotGame:
 
         self.already_attacked_lighthouses = set()
 
+        # Board dimensions based on the problem description
+        self.board_width = 15
+        self.board_height = 15
+
+        # Variables for snake-like pattern movement
+        self.starting_corner = None
+        self.current_direction = None
+        self.moving_horizontally = True
+        self.moving_forward = True
+        self.visited_cells = set()
+        self.return_journey = False
+        self.board_covered = False
+
     def new_turn_action(self, turn: game_pb2.NewTurn) -> game_pb2.NewAction:
         cx, cy = turn.Position.X, turn.Position.Y
 
@@ -54,13 +67,87 @@ class BotGame:
                 self.already_attacked_lighthouses.add((cx, cy))
                 return action
 
-        # Mover aleatoriamente
-        moves = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
-        move = random.choice(moves)
+        # Add current position to visited cells
+        self.visited_cells.add((cx, cy))
+
+        # Determine starting corner on first turn
+        if self.starting_corner is None:
+            # Determine which corner we're starting from
+            if cx == 0 and cy == 0:  # Upper-left corner
+                self.starting_corner = "upper-left"
+                self.current_direction = (1, 0)  # Move right initially
+                self.moving_horizontally = True
+                self.moving_forward = True
+            elif cx == self.board_width - 1 and cy == 0:  # Upper-right corner
+                self.starting_corner = "upper-right"
+                self.current_direction = (-1, 0)  # Move left initially
+                self.moving_horizontally = True
+                self.moving_forward = False
+            elif cx == 0 and cy == self.board_height - 1:  # Bottom-left corner
+                self.starting_corner = "bottom-left"
+                self.current_direction = (1, 0)  # Move right initially
+                self.moving_horizontally = True
+                self.moving_forward = True
+            elif cx == self.board_width - 1 and cy == self.board_height - 1:  # Bottom-right corner
+                self.starting_corner = "bottom-right"
+                self.current_direction = (-1, 0)  # Move left initially
+                self.moving_horizontally = True
+                self.moving_forward = False
+
+        # Check if we need to change direction
+        if self.moving_horizontally:
+            # Check if we've reached the edge of the board
+            if (cx == 0 and not self.moving_forward) or (cx == self.board_width - 1 and self.moving_forward):
+                # Move one step vertically
+                if self.starting_corner in ["upper-left", "upper-right"]:
+                    # Moving down
+                    self.current_direction = (0, 1)
+                else:
+                    # Moving up
+                    self.current_direction = (0, -1)
+
+                self.moving_horizontally = False
+
+        else:  # Moving vertically
+            # Check if we've moved one step vertically
+            if (self.starting_corner in ["upper-left", "upper-right"] and self.current_direction == (0, 1)) or \
+               (self.starting_corner in ["bottom-left", "bottom-right"] and self.current_direction == (0, -1)):
+                # Switch to horizontal movement in the opposite direction
+                self.moving_forward = not self.moving_forward
+                if self.moving_forward:
+                    self.current_direction = (1, 0)  # Move right
+                else:
+                    self.current_direction = (-1, 0)  # Move left
+
+                self.moving_horizontally = True
+
+        # Check if we've covered the entire board
+        if len(self.visited_cells) >= self.board_width * self.board_height and not self.board_covered:
+            self.board_covered = True
+            self.return_journey = True
+            # Reverse direction for return journey
+            self.current_direction = (-self.current_direction[0], -self.current_direction[1])
+
+        # Calculate next position
+        move = self.current_direction
+        next_x = turn.Position.X + move[0]
+        next_y = turn.Position.Y + move[1]
+
+        # Ensure we don't move outside the board
+        if next_x < 0:
+            next_x = 0
+        elif next_x >= self.board_width:
+            next_x = self.board_width - 1
+
+        if next_y < 0:
+            next_y = 0
+        elif next_y >= self.board_height:
+            next_y = self.board_height - 1
+
         action = game_pb2.NewAction(
             Action=game_pb2.MOVE,
             Destination=game_pb2.Position(
-                X=turn.Position.X + move[0], Y=turn.Position.Y + move[1]
+                X=next_x, Y=next_y
             ),
         )
 
