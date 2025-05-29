@@ -36,22 +36,22 @@ class BotGame:
         already_attacked_lighthouses = set()
 
         # Si estamos en un faro...
-        if (cx, cy) in lighthouses:
+        # if (cx, cy) in lighthouses:
 
             # 60% de posibilidades de atacar el faro
-            if turn.Energy > lighthouses[(cx, cy)].Energy and (cx, cy) not in already_attacked_lighthouses:
-                energy = lighthouses[(cx, cy)].Energy + 1
-                action = game_pb2.NewAction(
-                    Action=game_pb2.ATTACK,
-                    Energy=energy,
-                    Destination=game_pb2.Position(X=turn.Position.X, Y=turn.Position.Y),
-                )
-                bgt = BotGameTurn(turn, action)
-                self.turn_states.append(bgt)
-
-                self.countT += 1
-                already_attacked_lighthouses.add((cx, cy))
-                return action
+            # if turn.Energy > lighthouses[(cx, cy)].Energy and (cx, cy) not in already_attacked_lighthouses:
+            #     energy = lighthouses[(cx, cy)].Energy + 1
+            #     action = game_pb2.NewAction(
+            #         Action=game_pb2.ATTACK,
+            #         Energy=energy,
+            #         Destination=game_pb2.Position(X=turn.Position.X, Y=turn.Position.Y),
+            #     )
+            #     bgt = BotGameTurn(turn, action)
+            #     self.turn_states.append(bgt)
+            #
+            #     self.countT += 1
+            #     already_attacked_lighthouses.add((cx, cy))
+            #     return action
 
         # Mover aleatoriamente
         moves = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
