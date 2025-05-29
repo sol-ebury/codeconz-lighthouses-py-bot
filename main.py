@@ -122,11 +122,16 @@ class BotGame:
                 self.moving_horizontally = True
 
         # Check if we've covered the entire board
-        if len(self.visited_cells) >= self.board_width * self.board_height and not self.board_covered:
-            self.board_covered = True
-            self.return_journey = True
-            # Reverse direction for return journey
-            self.current_direction = (-self.current_direction[0], -self.current_direction[1])
+        if len(self.visited_cells) >= self.board_width * self.board_height:
+            if not self.board_covered:
+                self.board_covered = True
+                self.return_journey = True
+                # Reverse direction for return journey
+                self.current_direction = (-self.current_direction[0], -self.current_direction[1])
+            elif self.return_journey:
+                # Continue zig-zag movement in reverse
+                self.return_journey = False
+                self.current_direction = (-self.current_direction[0], -self.current_direction[1])
 
         # Calculate next position
         move = self.current_direction
