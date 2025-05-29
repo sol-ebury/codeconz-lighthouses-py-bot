@@ -35,40 +35,10 @@ class BotGame:
 
         # Si estamos en un faro...
         if (cx, cy) in lighthouses:
-            # Conectar con faro remoto válido si podemos
-            if lighthouses[(cx, cy)].Owner == self.player_num:
-                possible_connections = []
-                for dest in lighthouses:
-                    # No conectar con sigo mismo
-                    # No conectar si no tenemos la clave
-                    # No conectar si ya existe la conexión
-                    # No conectar si no controlamos el destino
-                    # Nota: no comprobamos si la conexión se cruza.
-                    if (
-                        dest != (cx, cy)
-                        and lighthouses[dest].HaveKey
-                        and [cx, cy] not in lighthouses[dest].Connections
-                        and lighthouses[dest].Owner == self.player_num
-                    ):
-                        possible_connections.append(dest)
-
-                if possible_connections:
-                    possible_connection = random.choice(possible_connections)
-                    action = game_pb2.NewAction(
-                        Action=game_pb2.CONNECT,
-                        Destination=game_pb2.Position(
-                            X=possible_connection[0], Y=possible_connection[1]
-                        ),
-                    )
-                    bgt = BotGameTurn(turn, action)
-                    self.turn_states.append(bgt)
-
-                    self.countT += 1
-                    return action
 
             # 60% de posibilidades de atacar el faro
-            if random.randrange(100) < 60:
-                energy = random.randrange(turn.Energy + 1)
+            if turn.Energy > lighthouses[(cx, cy)].Energy:
+                energy = lighthouses[(cx, cy)].Energy + 1
                 action = game_pb2.NewAction(
                     Action=game_pb2.ATTACK,
                     Energy=energy,
