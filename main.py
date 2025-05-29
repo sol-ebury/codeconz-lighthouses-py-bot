@@ -33,11 +33,13 @@ class BotGame:
         for lh in turn.Lighthouses:
             lighthouses[(lh.Position.X, lh.Position.Y)] = lh
 
+        already_attacked_lighthouses = set()
+
         # Si estamos en un faro...
         if (cx, cy) in lighthouses:
 
             # 60% de posibilidades de atacar el faro
-            if turn.Energy > lighthouses[(cx, cy)].Energy:
+            if turn.Energy > lighthouses[(cx, cy)].Energy and (cx, cy) not in already_attacked_lighthouses:
                 energy = lighthouses[(cx, cy)].Energy + 1
                 action = game_pb2.NewAction(
                     Action=game_pb2.ATTACK,
@@ -48,6 +50,7 @@ class BotGame:
                 self.turn_states.append(bgt)
 
                 self.countT += 1
+                already_attacked_lighthouses.add((cx, cy))
                 return action
 
         # Mover aleatoriamente
